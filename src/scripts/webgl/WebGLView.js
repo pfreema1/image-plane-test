@@ -9,6 +9,7 @@ import basicDiffuseVert from '../../shaders/basicDiffuse.vert';
 import MouseCanvas from '../MouseCanvas';
 import TextCanvas from '../TextCanvas';
 import RenderTri from '../RenderTri';
+import fitPlaneToScreen from '../utils/fitPlaneToScreen';
 
 export default class WebGLView {
 	constructor(app) {
@@ -30,6 +31,23 @@ export default class WebGLView {
 		this.initMouseMoveListen();
 		this.initMouseCanvas();
 		this.initRenderTri();
+		this.initPlane();
+	}
+
+	initPlane() {
+		const planeDimensions = fitPlaneToScreen(this.bgCamera, -5, this.width, this.height);
+
+		this.bgScene.add(new THREE.Mesh(
+			new THREE.PlaneGeometry(planeDimensions.width, planeDimensions.height, 32),
+			new THREE.MeshBasicMaterial({
+				color: 0xffff00
+			})
+
+		)
+		);
+
+		console.log('planeDimensions:  ', planeDimensions);
+
 	}
 
 	initTweakPane() {
