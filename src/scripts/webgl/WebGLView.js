@@ -31,22 +31,52 @@ export default class WebGLView {
 		this.initMouseMoveListen();
 		this.initMouseCanvas();
 		this.initRenderTri();
-		this.initPlane();
+		this.initCubes();
 	}
 
-	initPlane() {
-		const planeDimensions = fitPlaneToScreen(this.bgCamera, -5, this.width, this.height);
-
-		this.bgScene.add(new THREE.Mesh(
-			new THREE.PlaneGeometry(planeDimensions.width, planeDimensions.height, 32),
+	initCubes() {
+		const pD = fitPlaneToScreen(this.bgCamera, -10, this.width, this.height);  // planeDimensions
+		const planeMesh = new THREE.Mesh(
+			new THREE.PlaneGeometry(pD.width, pD.height, 32),
 			new THREE.MeshBasicMaterial({
 				color: 0xffff00
 			})
 
-		)
 		);
 
-		console.log('planeDimensions:  ', planeDimensions);
+		this.bgScene.add(planeMesh);
+
+		planeMesh.position.z = -10;
+
+
+		// cubes
+
+		const cubeRows = 10;
+		const cubeColumns = 15;
+		this.cubes = [];
+
+		for (let i = 0; i < cubeRows; i++) {
+			for (let j = 0; j < cubeColumns; j++) {
+				const cubeWidth = pD.width / cubeRows;
+				const cubeHeight = pD.height / cubeColumns;
+				const geo = new THREE.BoxBufferGeometry(cubeWidth, cubeHeight, 1);
+				const mat = new THREE.MeshLambertMaterial({ color: 0x0000ff });
+				const cubeMesh = new THREE.Mesh(geo, mat);
+				const x = -(pD.width / 2) + (i * cubeWidth);
+				const y = (pD.height / 2) - (j * cubeHeight);
+				const z = -10;
+				cubeMesh.position.set(x, y, z);
+				this.bgScene.add(cubeMesh);
+				this.cubes.push(cubeMesh);
+
+				TweenMax.to(cubeMesh.rotation, 3.0, {
+					repeat: -1,
+					delay: 0.5 * j + (i * 0.2),
+					y: Math.PI
+				});
+			}
+		}
+
 
 	}
 
@@ -155,8 +185,8 @@ export default class WebGLView {
 	}
 
 	initLights() {
-		this.pointLight = new THREE.PointLight(0xff0000, 1, 100);
-		this.pointLight.position.set(0, 0, 50);
+		this.pointLight = new THREE.PointLight(0xffffff, 1, 1000);
+		this.pointLight.position.set(0, 0, 0);
 		this.bgScene.add(this.pointLight);
 	}
 
@@ -190,6 +220,14 @@ export default class WebGLView {
 		this.textCanvas.texture.needsUpdate = true;
 	}
 
+	updateCubes(time) {
+		// for(let i = 0; i < this.cubes.length; i++) {
+		// 	let cube = this.cubes[i];
+
+		// 	cube.rotation.y
+		// }
+	}
+
 	update() {
 		const delta = this.clock.getDelta();
 		const time = performance.now() * 0.0005;
@@ -204,12 +242,16 @@ export default class WebGLView {
 			this.updateTestMesh(time);
 		}
 
-		if (this.mouseCanvas) {
-			this.mouseCanvas.update();
-		}
+		// if (this.mouseCanvas) {
+		// 	this.mouseCanvas.update();
+		// }
 
-		if (this.textCanvas) {
-			this.updateTextCanvas(time);
+		// if (this.textCanvas) {
+		// 	this.updateTextCanvas(time);
+		// }
+
+		if (this.cubes) {
+			this.updateCubes(time);
 		}
 
 		if (this.trackball) this.trackball.update();
