@@ -10,258 +10,334 @@ import MouseCanvas from '../MouseCanvas';
 import TextCanvas from '../TextCanvas';
 import RenderTri from '../RenderTri';
 import fitPlaneToScreen from '../utils/fitPlaneToScreen';
+import imageTextureFrag from '../../shaders/imageTexture.frag';
+import imageTextureVert from '../../shaders/imageTexture.vert';
 
 export default class WebGLView {
-  constructor(app) {
-    this.app = app;
-    this.PARAMS = {
-      rotSpeed: 0.005
-    };
+	constructor(app) {
+		this.app = app;
+		this.PARAMS = {
+			rotSpeed: 0.005
+		};
 
-    this.init();
-  }
+		this.init();
+	}
 
-  async init() {
-    this.initThree();
-    this.initBgScene();
-    this.initLights();
-    this.initTweakPane();
-    await this.loadTestMesh();
-    this.setupTextCanvas();
-    this.initMouseMoveListen();
-    this.initMouseCanvas();
-    this.initRenderTri();
-    this.initCubes();
-  }
+	async init() {
+		this.initThree();
+		this.initBgScene();
+		this.initLights();
+		this.initTweakPane();
+		// await this.loadTestMesh();
+		this.setupTextCanvas();
+		this.initMouseMoveListen();
+		this.initMouseCanvas();
+		this.initRenderTri();
+		await this.loadTexture();
+		this.initCubes();
+		this.initPlaneWithTexture();
+	}
 
-  initCubes() {
-    const pD = fitPlaneToScreen(this.bgCamera, -10, this.width, this.height); // planeDimensions
-    const planeMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(pD.width, pD.height, 32),
-      new THREE.MeshBasicMaterial({
-        color: 0xffff00
-      })
-    );
+	async loadTexture() {
+		return new Promise((res, rej) => {
+			let loader = new THREE.TextureLoader();
 
-    // this.bgScene.add(planeMesh);
+			loader.load('./cau.png', (texture) => {
+				this.imageTexture = texture;
+				this.imageTexture.generateMipmaps = false;
+				this.imageTexture.minFilter = THREE.LinearFilter;
+				this.imageTexture.needsUpdate = true;
+				console.log('this.imageTexture:  ', this.imageTexture);
+				res();
+			});
+		});
+	}
 
-    planeMesh.position.z = -10;
+	initPlaneWithTexture() {
+		const pD = fitPlaneToScreen(this.bgCamera, -6, this.width, this.height); // planeDimensions
+		const iD = {
+			width: this.imageTexture.image.width,
+			height: this.imageTexture.image.height,
+		};  // imageDimensions
+		const normImageDim = {
+			width: iD.width / window.innerWidth,
+			height: iD.height / window.innerHeight
+		};
+		const gridDim = {
+			width: pD.width * normImageDim.width,
+			height: pD.height * normImageDim.height
+		};
 
-    // cubes
+		this.imagePlanes = [];
+		const rows = 4;
+		const columns = 6;
 
-    const cubeRows = 10;
-    const cubeColumns = 15;
-    this.cubes = [];
+		for (let i = 0; i < rows; i++) {
+			for (let j = 0; j < columns; j++) {
+				const planeWidth = gridDim.width / rows;
+				const planeHeight = gridDim.height / columns;
+				const geo = new THREE.PlaneGeometry(planeWidth, planeHeight, 32);
+				const mat = new THREE.ShaderMaterial({
+					uniforms: {
+						image: {
+							value: this.imageTexture
+						},
+						gridDimension: {
+							value: new THREE.Vector2(rows, columns)
+						},
+						id: {
+							value: new THREE.Vector2(i / rows, 1.0 - (j / columns) - (1 / columns))
+						},
+						imageResolution: {
+							value: new THREE.Vector2(this.imageTexture.image.width, this.imageTexture.image.height)
+						},
+						resolution: {
+							value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+						}
+					},
+					fragmentShader: glslify(imageTextureFrag),
+					vertexShader: glslify(imageTextureVert)
+				})
+				const planeMesh = new THREE.Mesh(geo, mat);
+				const x = -(gridDim.width / 2) + i * planeWidth + planeWidth / 2;
+				const y = gridDim.height / 2 - j * planeHeight - planeHeight / 2;
+				const z = -6;
+				planeMesh.position.set(x, y, z);
 
-    for (let i = 0; i < cubeRows; i++) {
-      for (let j = 0; j < cubeColumns; j++) {
-        const cubeWidth = pD.width / cubeRows;
-        const cubeHeight = pD.height / cubeColumns;
-        const geo = new THREE.PlaneBufferGeometry(cubeWidth, cubeHeight, 32);
-        const mat = new THREE.MeshLambertMaterial({
-          color: 0x0000ff,
-          side: THREE.DoubleSide
-        });
-        const cubeMesh = new THREE.Mesh(geo, mat);
-        const x = -(pD.width / 2) + i * cubeWidth + cubeWidth / 2;
-        const y = pD.height / 2 - j * cubeHeight - cubeHeight / 2;
-        const z = -10;
-        cubeMesh.position.set(x, y, z);
-        this.bgScene.add(cubeMesh);
-        this.cubes.push(cubeMesh);
+				this.bgScene.add(planeMesh);
 
-        TweenMax.to(cubeMesh.rotation, 3.0, {
-          repeat: -1,
-          delay: 0.5 * j + i * 0.2,
-          y: Math.PI * 2
-        });
-      }
-    }
-  }
 
-  initTweakPane() {
-    this.pane = new Tweakpane();
+				TweenMax.to(planeMesh.rotation, 3.0, {
+					repeat: -1,
+					yoyo: true,
+					delay: 0.5 * j + i * 0.2,
+					y: Math.PI * 0.2
+				});
 
-    this.pane
-      .addInput(this.PARAMS, 'rotSpeed', {
-        min: 0.0,
-        max: 0.5
-      })
-      .on('change', value => {});
-  }
+			}
+		}
 
-  initMouseCanvas() {
-    this.mouseCanvas = new MouseCanvas();
-  }
+	}
 
-  initMouseMoveListen() {
-    this.mouse = new THREE.Vector2();
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+	initCubes() {
+		const pD = fitPlaneToScreen(this.bgCamera, -10, this.width, this.height); // planeDimensions
 
-    window.addEventListener('mousemove', ({ clientX, clientY }) => {
-      this.mouse.x = clientX; //(clientX / this.width) * 2 - 1;
-      this.mouse.y = clientY; //-(clientY / this.height) * 2 + 1;
 
-      this.mouseCanvas.addTouch(this.mouse);
-    });
-  }
+		const cubeRows = 6;
+		const cubeColumns = 8;
+		this.cubes = [];
 
-  initThree() {
-    this.scene = new THREE.Scene();
+		for (let i = 0; i < cubeRows; i++) {
+			for (let j = 0; j < cubeColumns; j++) {
+				const cubeWidth = pD.width / cubeRows;
+				const cubeHeight = pD.height / cubeColumns;
+				const geo = new THREE.PlaneBufferGeometry(cubeWidth, cubeHeight, 32);
+				const mat = new THREE.MeshLambertMaterial({
+					color: 0x0000ff,
+					side: THREE.DoubleSide,
+					transparent: true
+				});
+				mat.opacity = 0.5;
+				const cubeMesh = new THREE.Mesh(geo, mat);
+				const x = -(pD.width / 2) + i * cubeWidth + cubeWidth / 2;
+				const y = pD.height / 2 - j * cubeHeight - cubeHeight / 2;
+				const z = -10;
+				cubeMesh.position.set(x, y, z);
+				this.bgScene.add(cubeMesh);
+				this.cubes.push(cubeMesh);
 
-    this.camera = new THREE.OrthographicCamera();
+				TweenMax.to(cubeMesh.rotation, 3.0, {
+					repeat: -1,
+					delay: 0.5 * j + i * 0.2,
+					y: Math.PI * 2
+				});
+			}
+		}
+	}
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.autoClear = true;
+	initTweakPane() {
+		this.pane = new Tweakpane();
 
-    this.clock = new THREE.Clock();
-  }
+		this.pane
+			.addInput(this.PARAMS, 'rotSpeed', {
+				min: 0.0,
+				max: 0.5
+			})
+			.on('change', value => { });
+	}
 
-  setupTextCanvas() {
-    this.textCanvas = new TextCanvas(this);
-  }
+	initMouseCanvas() {
+		this.mouseCanvas = new MouseCanvas();
+	}
 
-  loadTestMesh() {
-    return new Promise((res, rej) => {
-      let loader = new GLTFLoader();
+	initMouseMoveListen() {
+		this.mouse = new THREE.Vector2();
+		this.width = window.innerWidth;
+		this.height = window.innerHeight;
 
-      loader.load('./bbali.glb', object => {
-        this.testMesh = object.scene.children[0];
-        console.log(this.testMesh);
-        this.testMesh.add(new THREE.AxesHelper());
+		window.addEventListener('mousemove', ({ clientX, clientY }) => {
+			this.mouse.x = clientX; //(clientX / this.width) * 2 - 1;
+			this.mouse.y = clientY; //-(clientY / this.height) * 2 + 1;
 
-        this.testMeshMaterial = new THREE.ShaderMaterial({
-          fragmentShader: glslify(baseDiffuseFrag),
-          vertexShader: glslify(basicDiffuseVert),
-          uniforms: {
-            u_time: {
-              value: 0.0
-            },
-            u_lightColor: {
-              value: new THREE.Vector3(0.0, 1.0, 1.0)
-            },
-            u_lightPos: {
-              value: new THREE.Vector3(-2.2, 2.0, 2.0)
-            }
-          }
-        });
+			this.mouseCanvas.addTouch(this.mouse);
+		});
+	}
 
-        this.testMesh.material = this.testMeshMaterial;
-        this.testMesh.material.needsUpdate = true;
+	initThree() {
+		this.scene = new THREE.Scene();
 
-        this.bgScene.add(this.testMesh);
-        res();
-      });
-    });
-  }
+		this.camera = new THREE.OrthographicCamera();
 
-  initRenderTri() {
-    this.resize();
+		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+		this.renderer.autoClear = true;
 
-    this.renderTri = new RenderTri(
-      this.scene,
-      this.renderer,
-      this.bgRenderTarget,
-      this.mouseCanvas,
-      this.textCanvas
-    );
-  }
+		this.clock = new THREE.Clock();
+	}
 
-  initBgScene() {
-    this.bgRenderTarget = new THREE.WebGLRenderTarget(
-      window.innerWidth,
-      window.innerHeight
-    );
-    this.bgCamera = new THREE.PerspectiveCamera(
-      50,
-      window.innerWidth / window.innerHeight,
-      0.01,
-      100
-    );
-    this.controls = new OrbitControls(this.bgCamera, this.renderer.domElement);
+	setupTextCanvas() {
+		this.textCanvas = new TextCanvas(this);
+	}
 
-    this.bgCamera.position.z = 3;
-    this.controls.update();
+	loadTestMesh() {
+		return new Promise((res, rej) => {
+			let loader = new GLTFLoader();
 
-    this.bgScene = new THREE.Scene();
-  }
+			loader.load('./bbali.glb', object => {
+				this.testMesh = object.scene.children[0];
+				console.log(this.testMesh);
+				this.testMesh.add(new THREE.AxesHelper());
 
-  initLights() {
-    this.pointLight = new THREE.PointLight(0xffffff, 1, 1000);
-    this.pointLight.position.set(0, 0, 0);
-    this.bgScene.add(this.pointLight);
-  }
+				this.testMeshMaterial = new THREE.ShaderMaterial({
+					fragmentShader: glslify(baseDiffuseFrag),
+					vertexShader: glslify(basicDiffuseVert),
+					uniforms: {
+						u_time: {
+							value: 0.0
+						},
+						u_lightColor: {
+							value: new THREE.Vector3(0.0, 1.0, 1.0)
+						},
+						u_lightPos: {
+							value: new THREE.Vector3(-2.2, 2.0, 2.0)
+						}
+					}
+				});
 
-  resize() {
-    if (!this.renderer) return;
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
+				this.testMesh.material = this.testMeshMaterial;
+				this.testMesh.material.needsUpdate = true;
 
-    this.fovHeight =
-      2 *
-      Math.tan((this.camera.fov * Math.PI) / 180 / 2) *
-      this.camera.position.z;
-    this.fovWidth = this.fovHeight * this.camera.aspect;
+				this.bgScene.add(this.testMesh);
+				res();
+			});
+		});
+	}
 
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+	initRenderTri() {
+		this.resize();
 
-    if (this.trackball) this.trackball.handleResize();
-  }
+		this.renderTri = new RenderTri(
+			this.scene,
+			this.renderer,
+			this.bgRenderTarget,
+			this.mouseCanvas,
+			this.textCanvas
+		);
+	}
 
-  updateTestMesh(time) {
-    this.testMesh.rotation.y += this.PARAMS.rotSpeed;
+	initBgScene() {
+		this.bgRenderTarget = new THREE.WebGLRenderTarget(
+			window.innerWidth,
+			window.innerHeight
+		);
+		this.bgCamera = new THREE.PerspectiveCamera(
+			50,
+			window.innerWidth / window.innerHeight,
+			0.01,
+			100
+		);
+		this.controls = new OrbitControls(this.bgCamera, this.renderer.domElement);
 
-    this.testMeshMaterial.uniforms.u_time.value = time;
-  }
+		this.bgCamera.position.z = 3;
+		this.controls.update();
 
-  updateTextCanvas(time) {
-    this.textCanvas.textLine.update(time);
-    this.textCanvas.textLine.draw(time);
-    this.textCanvas.texture.needsUpdate = true;
-  }
+		this.bgScene = new THREE.Scene();
+	}
 
-  updateCubes(time) {
-    // for(let i = 0; i < this.cubes.length; i++) {
-    // 	let cube = this.cubes[i];
-    // 	cube.rotation.y
-    // }
-  }
+	initLights() {
+		this.pointLight = new THREE.PointLight(0xffffff, 1, 1000);
+		this.pointLight.position.set(0, 0, 0);
+		this.bgScene.add(this.pointLight);
+	}
 
-  update() {
-    const delta = this.clock.getDelta();
-    const time = performance.now() * 0.0005;
+	resize() {
+		if (!this.renderer) return;
+		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.updateProjectionMatrix();
 
-    this.controls.update();
+		this.fovHeight =
+			2 *
+			Math.tan((this.camera.fov * Math.PI) / 180 / 2) *
+			this.camera.position.z;
+		this.fovWidth = this.fovHeight * this.camera.aspect;
 
-    if (this.renderTri) {
-      this.renderTri.triMaterial.uniforms.uTime.value = time;
-    }
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-    if (this.testMesh) {
-      this.updateTestMesh(time);
-    }
+		if (this.trackball) this.trackball.handleResize();
+	}
 
-    // if (this.mouseCanvas) {
-    // 	this.mouseCanvas.update();
-    // }
+	updateTestMesh(time) {
+		this.testMesh.rotation.y += this.PARAMS.rotSpeed;
 
-    // if (this.textCanvas) {
-    // 	this.updateTextCanvas(time);
-    // }
+		this.testMeshMaterial.uniforms.u_time.value = time;
+	}
 
-    if (this.cubes) {
-      this.updateCubes(time);
-    }
+	updateTextCanvas(time) {
+		this.textCanvas.textLine.update(time);
+		this.textCanvas.textLine.draw(time);
+		this.textCanvas.texture.needsUpdate = true;
+	}
 
-    if (this.trackball) this.trackball.update();
-  }
+	updateCubes(time) {
+		// for(let i = 0; i < this.cubes.length; i++) {
+		// 	let cube = this.cubes[i];
+		// 	cube.rotation.y
+		// }
+	}
 
-  draw() {
-    this.renderer.setRenderTarget(this.bgRenderTarget);
-    this.renderer.render(this.bgScene, this.bgCamera);
-    this.renderer.setRenderTarget(null);
+	update() {
+		const delta = this.clock.getDelta();
+		const time = performance.now() * 0.0005;
 
-    this.renderer.render(this.scene, this.camera);
-  }
+		this.controls.update();
+
+		if (this.renderTri) {
+			this.renderTri.triMaterial.uniforms.uTime.value = time;
+		}
+
+		if (this.testMesh) {
+			this.updateTestMesh(time);
+		}
+
+		// if (this.mouseCanvas) {
+		// 	this.mouseCanvas.update();
+		// }
+
+		// if (this.textCanvas) {
+		// 	this.updateTextCanvas(time);
+		// }
+
+		if (this.cubes) {
+			this.updateCubes(time);
+		}
+
+		if (this.trackball) this.trackball.update();
+	}
+
+	draw() {
+		this.renderer.setRenderTarget(this.bgRenderTarget);
+		this.renderer.render(this.bgScene, this.bgCamera);
+		this.renderer.setRenderTarget(null);
+
+		this.renderer.render(this.scene, this.camera);
+	}
 }
