@@ -28,7 +28,6 @@ export default class WebGLView {
 		this.initBgScene();
 		this.initLights();
 		this.initTweakPane();
-		// await this.loadTestMesh();
 		this.setupTextCanvas();
 		this.initMouseMoveListen();
 		this.initMouseCanvas();
@@ -196,40 +195,6 @@ export default class WebGLView {
 
 	setupTextCanvas() {
 		this.textCanvas = new TextCanvas(this);
-	}
-
-	loadTestMesh() {
-		return new Promise((res, rej) => {
-			let loader = new GLTFLoader();
-
-			loader.load('./bbali.glb', object => {
-				this.testMesh = object.scene.children[0];
-				console.log(this.testMesh);
-				this.testMesh.add(new THREE.AxesHelper());
-
-				this.testMeshMaterial = new THREE.ShaderMaterial({
-					fragmentShader: glslify(baseDiffuseFrag),
-					vertexShader: glslify(basicDiffuseVert),
-					uniforms: {
-						u_time: {
-							value: 0.0
-						},
-						u_lightColor: {
-							value: new THREE.Vector3(0.0, 1.0, 1.0)
-						},
-						u_lightPos: {
-							value: new THREE.Vector3(-2.2, 2.0, 2.0)
-						}
-					}
-				});
-
-				this.testMesh.material = this.testMeshMaterial;
-				this.testMesh.material.needsUpdate = true;
-
-				this.bgScene.add(this.testMesh);
-				res();
-			});
-		});
 	}
 
 	initRenderTri() {
