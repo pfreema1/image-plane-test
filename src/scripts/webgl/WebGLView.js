@@ -12,6 +12,7 @@ import RenderTri from '../RenderTri';
 import fitPlaneToScreen from '../utils/fitPlaneToScreen';
 import imageTextureFrag from '../../shaders/imageTexture.frag';
 import imageTextureVert from '../../shaders/imageTexture.vert';
+import Grid from '../Grid';
 
 export default class WebGLView {
 	constructor(app) {
@@ -33,8 +34,13 @@ export default class WebGLView {
 		this.initMouseCanvas();
 		this.initRenderTri();
 		await this.loadTexture();
-		this.initCubes();
-		this.initPlaneWithTexture();
+		// this.initCubes();
+		this.initGrid();
+		// this.initPlaneWithTexture();
+	}
+
+	initGrid() {
+		this.grid = new Grid(this);
 	}
 
 	async loadTexture() {
