@@ -36,6 +36,8 @@ export default class TextureCube {
             vertexShader: glslify(imageTextureCubeVert),
         });
         this.mesh = new THREE.Mesh(geo, mat);
+        console.log(this.mesh);
+
         const x = -(pD.width / 2) + id.i * width + width / 2;
         const y = pD.height / 2 - id.j * height - height / 2;
         const z = zVal;
