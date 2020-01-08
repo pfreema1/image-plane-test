@@ -61,7 +61,7 @@ export default class RenderTri {
         // triangle in clip space coords
         const vertices = new Float32Array([-1.0, -1.0, 3.0, -1.0, -1.0, 3.0]);
 
-        geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 2));
+        geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 2));
 
         return geometry;
     }

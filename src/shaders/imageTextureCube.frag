@@ -1,4 +1,5 @@
 uniform sampler2D image;
+uniform sampler2D textCanvasTexture;
 uniform vec2 gridDimension;
 uniform vec2 id;
 uniform vec2 imageResolution;
@@ -23,5 +24,5 @@ void main() {
     uv.x += id.x;
     uv.y += id.y;
 
-    gl_FragColor = vec4(texture2D(image, uv).xyz, 1.0);
+    gl_FragColor = vec4(texture2D(textCanvasTexture, uv).xyz, 1.0);
 }

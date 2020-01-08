@@ -32,13 +32,16 @@ export default class TextureCube {
                 },
                 resolution: {
                     value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+                },
+                textCanvasTexture: {
+                    value: this.webGLView.textCanvas.texture
                 }
             },
             fragmentShader: glslify(imageTextureCubeFrag),
             vertexShader: glslify(imageTextureCubeVert),
         });
         this.mesh = new THREE.Mesh(geo, mat);
-        console.log(this.mesh);
+        // console.log(this.mesh);
 
         const x = -(pD.width / 2) + id.i * width + width / 2;
         const y = pD.height / 2 - id.j * height - height / 2;
@@ -49,7 +52,7 @@ export default class TextureCube {
             repeat: -1,
             yoyo: true,
             delay: 0.5 * id.j + id.i * 0.2,
-            y: Math.PI * 0.2
+            y: Math.PI * 2.0,
         });
     }
 
@@ -87,6 +90,6 @@ export default class TextureCube {
             1, 0,
         ]);
 
-        geo.addAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
     }
 }

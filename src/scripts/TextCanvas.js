@@ -15,7 +15,7 @@ export default class TextCanvas {
         this.texture.minFilter = THREE.LinearFilter;
         this.texture.needsUpdate = true;
 
-        this.string = 'LOREM CRIPSUM';
+        this.string = 'CASH RULES EVERYTHING AROUND ME';
         let fontSize = 180;
 
         this.ctx.font = fontSize + 'px Oswald';
@@ -36,7 +36,7 @@ export default class TextCanvas {
             textSnippetWidth,
             snippetPadding,
             scrollSpeed,
-            1,
+            -1,
             this.ctx,
             fontSize,
             this.string

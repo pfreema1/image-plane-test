@@ -293,9 +293,9 @@ export default class WebGLView {
 		// 	this.mouseCanvas.update();
 		// }
 
-		// if (this.textCanvas) {
-		// 	this.updateTextCanvas(time);
-		// }
+		if (this.textCanvas) {
+			this.updateTextCanvas(time);
+		}
 
 		if (this.cubes) {
 			this.updateCubes(time);
