@@ -10,7 +10,9 @@ export default class TextLine {
         scrollDir,
         ctx,
         fontSize,
-        textString
+        textString,
+        textColor,
+        bgColor
     ) {
         this.snippets = [
             {
@@ -37,6 +39,8 @@ export default class TextLine {
         this.height = window.innerHeight;
         this.fontSize = fontSize;
         this.textString = textString;
+        this.bgColor = bgColor;
+        this.textColor = textColor;
 
         this.rotationTime = 2;
     }
@@ -97,7 +101,7 @@ export default class TextLine {
         // this.ctx.translate(0, 0);
 
         this.ctx.clearRect(0, 0, this.width, this.height);
-        this.ctx.fillStyle = 'white';
+        this.ctx.fillStyle = this.bgColor;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
         // this.ctx.rotate(Math.PI / 180);
@@ -106,7 +110,7 @@ export default class TextLine {
 
         for (let i = 0; i < this.snippets.length; i++) {
             this.ctx.font = this.fontSize + 'px Oswald';
-            this.ctx.fillStyle = 'black';
+            this.ctx.fillStyle = this.textColor;
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(

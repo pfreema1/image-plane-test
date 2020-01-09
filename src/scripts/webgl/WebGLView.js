@@ -200,7 +200,9 @@ export default class WebGLView {
 	}
 
 	setupTextCanvas() {
-		this.textCanvas = new TextCanvas(this);
+		this.textCanvas1 = new TextCanvas(this, 'CASH RULES EVERYTHING AROUND ME', '#000000', '#FFFFFF');
+
+		this.textCanvas2 = new TextCanvas(this, 'CASH RULES EVERYTHING AROUND ME', '#FFFFFF', '#000000');
 	}
 
 	initRenderTri() {
@@ -211,7 +213,7 @@ export default class WebGLView {
 			this.renderer,
 			this.bgRenderTarget,
 			this.mouseCanvas,
-			this.textCanvas
+			this.textCanvas1
 		);
 	}
 
@@ -262,10 +264,14 @@ export default class WebGLView {
 		this.testMeshMaterial.uniforms.u_time.value = time;
 	}
 
-	updateTextCanvas(time) {
-		this.textCanvas.textLine.update(time);
-		this.textCanvas.textLine.draw(time);
-		this.textCanvas.texture.needsUpdate = true;
+	updateTextCanvases(time) {
+		this.textCanvas1.textLine.update(time);
+		this.textCanvas1.textLine.draw(time);
+		this.textCanvas1.texture.needsUpdate = true;
+
+		this.textCanvas2.textLine.update(time);
+		this.textCanvas2.textLine.draw(time);
+		this.textCanvas2.texture.needsUpdate = true;
 	}
 
 	updateCubes(time) {
@@ -293,8 +299,8 @@ export default class WebGLView {
 		// 	this.mouseCanvas.update();
 		// }
 
-		if (this.textCanvas) {
-			this.updateTextCanvas(time);
+		if (this.textCanvas1 && this.textCanvas2) {
+			this.updateTextCanvases(time);
 		}
 
 		if (this.cubes) {

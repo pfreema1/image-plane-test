@@ -27,21 +27,27 @@ export default class TextureCube {
                 id: {
                     value: new THREE.Vector2(id.i / rows, 1.0 - (id.j / columns) - (1 / columns))
                 },
+                gridId: {
+                    value: new THREE.Vector2(id.i, id.j)
+                },
                 imageResolution: {
                     value: new THREE.Vector2(this.imageTexture.image.width, this.imageTexture.image.height)
                 },
                 resolution: {
                     value: new THREE.Vector2(window.innerWidth, window.innerHeight)
                 },
-                textCanvasTexture: {
-                    value: this.webGLView.textCanvas.texture
+                textCanvasTexture1: {
+                    value: this.webGLView.textCanvas1.texture
+                },
+                textCanvasTexture2: {
+                    value: this.webGLView.textCanvas2.texture
                 }
             },
             fragmentShader: glslify(imageTextureCubeFrag),
             vertexShader: glslify(imageTextureCubeVert),
         });
         this.mesh = new THREE.Mesh(geo, mat);
-        // console.log(this.mesh);
+        console.log(id);
 
         const x = -(pD.width / 2) + id.i * width + width / 2;
         const y = pD.height / 2 - id.j * height - height / 2;

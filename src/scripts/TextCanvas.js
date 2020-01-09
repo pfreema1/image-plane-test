@@ -2,7 +2,7 @@ import TextLine from './TextLine';
 import * as THREE from 'three';
 
 export default class TextCanvas {
-    constructor(webGlView) {
+    constructor(webGlView, str, textColor, bgColor) {
         this.webGlView = webGlView;
 
         this.canvas = document.createElement('canvas');
@@ -15,11 +15,11 @@ export default class TextCanvas {
         this.texture.minFilter = THREE.LinearFilter;
         this.texture.needsUpdate = true;
 
-        this.string = 'CASH RULES EVERYTHING AROUND ME';
+        this.string = str;
         let fontSize = 180;
 
         this.ctx.font = fontSize + 'px Oswald';
-        this.ctx.fillStyle = 'black';
+        this.ctx.fillStyle = textColor;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
 
@@ -39,7 +39,9 @@ export default class TextCanvas {
             -1,
             this.ctx,
             fontSize,
-            this.string
+            this.string,
+            textColor,
+            bgColor
         );
     }
 }
