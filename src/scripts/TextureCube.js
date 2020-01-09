@@ -35,7 +35,7 @@ export default class TextureCube {
                 },
                 textCanvasTexture: {
                     value: this.webGLView.textCanvas.texture
-                }
+                },
             },
             fragmentShader: glslify(imageTextureCubeFrag),
             vertexShader: glslify(imageTextureCubeVert),
