@@ -9,6 +9,11 @@ uniform vec2 resolution;
 
 varying vec2 vUv;
 
+mat2 scale(vec2 _scale){
+    return mat2(_scale.x,0.0,
+                0.0,_scale.y);
+}
+
 void main() {
     // vec2 ratio = vec2(
     //     min((resolution.x / resolution.y) / (resolution.x / resolution.y), 1.0),
@@ -28,19 +33,21 @@ void main() {
     uv.x += id.x;
     uv.y += id.y;
 
+    // uv = scale(vec2(1.0, sin(uv.x))) * uv;
+
     vec4 texture1Color = texture2D(textCanvasTexture1, uv);
     vec4 texture2Color = texture2D(textCanvasTexture2, uv);
 
-    /*
-    // testing flipped colors here
-    vec4 finalColor;
+    
 
-    if(mod(gridId.x, 2.0) == 0.0) {
-        finalColor = texture1Color;
-    } else {
-        finalColor = texture2Color;
-    }
-    */
+    // testing flipped colors here
+    // vec4 finalColor;
+    // if(mod(gridId.x, 2.0) == 0.0) {
+    //     finalColor = texture1Color;
+    // } else {
+    //     finalColor = texture2Color;
+    // }
+    
 
     gl_FragColor = vec4(texture1Color.xyz, 1.0);
 }

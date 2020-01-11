@@ -9,7 +9,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy / uResolution.xy;
     vec4 color = vec4(0.0);
     vec4 sceneColor = texture2D(uScene, uv);
-    vec4 canvasTextureColor = texture2D(uMouseCanvas, uv);
+    vec4 mouseCanvasColor = texture2D(uMouseCanvas, uv);
     vec4 textCanvasColor = texture2D(uTextCanvas, uv);
 
 
@@ -17,7 +17,11 @@ void main() {
 
     // color = mix(color, textCanvasColor, step(0.7, uv.x));
 
-    color = sceneColor;
+     vec4 refractColor1 = texture2D(uScene, uv + (mouseCanvasColor.r * 0.009 * 1.3));
+    vec4 refractColor2 = texture2D(uScene, uv + (mouseCanvasColor.r * 0.013 * 1.3));
+    vec4 refractColor3 = texture2D(uScene, uv + (mouseCanvasColor.r * 0.017 * 1.3));
+
+    color = vec4(refractColor1.r, refractColor2.g, refractColor3.b, 1.0);
     
     gl_FragColor = vec4(color);
 }

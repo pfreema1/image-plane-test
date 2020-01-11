@@ -47,7 +47,6 @@ export default class TextureCube {
             vertexShader: glslify(imageTextureCubeVert),
         });
         this.mesh = new THREE.Mesh(geo, mat);
-        console.log(id);
 
         const x = -(pD.width / 2) + id.i * width + width / 2;
         const y = pD.height / 2 - id.j * height - height / 2;
@@ -59,7 +58,7 @@ export default class TextureCube {
             yoyo: true,
             delay: 0.5 * id.j + id.i * 0.2,
             y: Math.PI * 0.2,
-            // z: Math.PI * 0.03
+            ease: Power4.easeInOut
         });
     }
 

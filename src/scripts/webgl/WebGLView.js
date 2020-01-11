@@ -295,9 +295,9 @@ export default class WebGLView {
 			this.updateTestMesh(time);
 		}
 
-		// if (this.mouseCanvas) {
-		// 	this.mouseCanvas.update();
-		// }
+		if (this.mouseCanvas) {
+			this.mouseCanvas.update();
+		}
 
 		if (this.textCanvas1 && this.textCanvas2) {
 			this.updateTextCanvases(time);

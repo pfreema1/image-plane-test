@@ -16,7 +16,7 @@ export default class TextCanvas {
         this.texture.needsUpdate = true;
 
         this.string = str;
-        let fontSize = 180;
+        let fontSize = 300;
 
         this.ctx.font = fontSize + 'px Oswald';
         this.ctx.fillStyle = textColor;
@@ -29,7 +29,7 @@ export default class TextCanvas {
         let textLineCount = Math.ceil(this.height / fontSize) + 1;
         let textLineHeight = fontSize;
         let snippetPadding = 45;
-        let scrollSpeed = 3;
+        let scrollSpeed = 5;
         this.textLine = new TextLine(
             0,
             this.height * 0.5,

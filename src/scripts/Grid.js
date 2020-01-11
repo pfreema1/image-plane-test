@@ -19,8 +19,8 @@ export default class Grid {
         // planeDimensions
         this.pD = fitPlaneToScreen(this.webGLView.bgCamera, zVal, window.innerWidth, window.innerHeight);
 
-        this.cubeRows = 20;
-        this.cubeColumns = 20;
+        this.cubeRows = 10;
+        this.cubeColumns = 10;
         this.cubes = [];
         const gridDim = {
             width: this.cubeRows,
