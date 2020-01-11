@@ -200,9 +200,9 @@ export default class WebGLView {
 	}
 
 	setupTextCanvas() {
-		this.textCanvas1 = new TextCanvas(this, 'CASH RULES EVERYTHING AROUND ME', '#000000', '#FFFFFF');
+		this.textCanvas1 = new TextCanvas(this, 'IT WAS ALL A DREAM', '#000000', '#FFFFFF');
 
-		this.textCanvas2 = new TextCanvas(this, 'CASH RULES EVERYTHING AROUND ME', '#FFFFFF', '#000000');
+		this.textCanvas2 = new TextCanvas(this, 'IT WAS ALL A DREAM', '#FFFFFF', '#000000');
 	}
 
 	initRenderTri() {

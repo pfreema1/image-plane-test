@@ -54,11 +54,12 @@ export default class TextureCube {
         const z = zVal;
         this.mesh.position.set(x, y, z);
 
-        TweenMax.to(this.mesh.rotation, 3.0, {
+        TweenMax.to(this.mesh.rotation, 5.0, {
             repeat: -1,
             yoyo: true,
             delay: 0.5 * id.j + id.i * 0.2,
-            y: Math.PI * 2.0,
+            y: Math.PI * 0.2,
+            // z: Math.PI * 0.03
         });
     }
 
@@ -85,10 +86,14 @@ export default class TextureCube {
             0, 0,
             1, 0,
             // top (this seems to be the front facing face!)
-            0, 2.5,
-            2.5, 2.5,
+            // 0, 2.5,
+            // 2.5, 2.5,
+            // 0, 0,
+            // 2.5, 0,
+            0, 1,
+            1, 1,
             0, 0,
-            2.5, 0,
+            1, 0,
             // bottom
             0, 1,
             1, 1,
