@@ -13,6 +13,10 @@ import fitPlaneToScreen from '../utils/fitPlaneToScreen';
 import imageTextureFrag from '../../shaders/imageTexture.frag';
 import imageTextureVert from '../../shaders/imageTexture.vert';
 import Grid from '../Grid';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass.js';
+import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
 
 export default class WebGLView {
 	constructor(app) {
@@ -37,10 +41,35 @@ export default class WebGLView {
 		// this.initCubes();
 		this.initGrid();
 		// this.initPlaneWithTexture();
+		this.initPostProcessing();
+
 	}
 
 	initGrid() {
 		this.grid = new Grid(this);
+	}
+
+	initPostProcessing() {
+		this.composer = new EffectComposer(this.renderer);
+
+		this.composer.addPass(new RenderPass(this.scene, this.camera));
+
+		const bloomPass = new BloomPass(
+			1.0,    // strength
+			25,   // kernel size
+			4,    // sigma ?
+			256,  // blur render target resolution
+		);
+		this.composer.addPass(bloomPass);
+
+		const filmPass = new FilmPass(
+			0.05,   // noise intensity
+			0.25,  // scanline intensity
+			648,    // scanline count
+			false,  // grayscale
+		);
+		filmPass.renderToScreen = true;
+		this.composer.addPass(filmPass);
 	}
 
 	async loadTexture() {
@@ -316,5 +345,9 @@ export default class WebGLView {
 		this.renderer.setRenderTarget(null);
 
 		this.renderer.render(this.scene, this.camera);
+
+		if (this.composer) {
+			this.composer.render();
+		}
 	}
 }
