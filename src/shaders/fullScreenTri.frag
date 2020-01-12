@@ -17,7 +17,7 @@ void main() {
 
     // color = mix(color, textCanvasColor, step(0.7, uv.x));
 
-     vec4 refractColor1 = texture2D(uScene, uv + (mouseCanvasColor.r * 0.009 * 2.3));
+    vec4 refractColor1 = texture2D(uScene, uv + (mouseCanvasColor.r * 0.009 * 2.3));
     vec4 refractColor2 = texture2D(uScene, uv + (mouseCanvasColor.r * 0.013 * 2.3));
     vec4 refractColor3 = texture2D(uScene, uv + (mouseCanvasColor.r * 0.017 * 2.3));
 

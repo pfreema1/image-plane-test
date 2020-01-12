@@ -14,7 +14,7 @@ export default class Grid {
 
         const zVal = -10;
 
-        await this.loadTextures();
+        // await this.loadTextures();
 
         // planeDimensions
         this.pD = fitPlaneToScreen(this.webGLView.bgCamera, zVal, window.innerWidth, window.innerHeight);
@@ -32,7 +32,7 @@ export default class Grid {
                 const id = { i, j };
                 const cubeWidth = this.pD.width / this.cubeRows;
                 const cubeHeight = this.pD.height / this.cubeColumns;
-                const textureCube = new TextureCube(this.webGLView, cubeWidth, cubeHeight, this.imageTexture, gridDim, id, zVal, this.pD);
+                const textureCube = new TextureCube(this.webGLView, cubeWidth, cubeHeight, gridDim, id, zVal, this.pD);
 
                 this.webGLView.bgScene.add(textureCube.mesh);
                 this.cubes.push(textureCube);
@@ -41,18 +41,5 @@ export default class Grid {
 
     }
 
-    async loadTextures() {
-        return new Promise((res, rej) => {
-            let loader = new THREE.TextureLoader();
 
-            loader.load('./cau.png', (texture) => {
-                this.imageTexture = texture;
-                this.imageTexture.generateMipmaps = false;
-                this.imageTexture.minFilter = THREE.LinearFilter;
-                this.imageTexture.needsUpdate = true;
-                console.log('this.imageTexture:  ', this.imageTexture);
-                res();
-            });
-        });
-    }
 }

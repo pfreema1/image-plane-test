@@ -17,6 +17,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass.js';
 import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
+import { debounce } from '../utils/debounce';
 
 export default class WebGLView {
 	constructor(app) {
@@ -37,13 +38,50 @@ export default class WebGLView {
 		this.initMouseMoveListen();
 		this.initMouseCanvas();
 		this.initRenderTri();
-		await this.loadTexture();
+		// await this.loadTexture();
 		// this.initCubes();
 		this.initGrid();
 		// this.initPlaneWithTexture();
 		this.initPostProcessing();
+		this.initResizeHandler();
 
 	}
+
+	initResizeHandler() {
+		window.addEventListener('resize', debounce(() => {
+			this.width = window.innerWidth;
+			this.height = window.innerHeight;
+
+			this.renderer.setSize(this.width, this.height);
+
+			// render tri
+			this.renderTri.renderer.setSize(this.width, this.height);
+			this.renderTri.triMaterial.uniforms.uResolution.value = new THREE.Vector2(this.width, this.height);
+
+			// bg scene
+			this.bgRenderTarget.setSize(this.width, this.height);
+			this.bgCamera.aspect = this.width / this.height;
+			this.bgCamera.updateProjectionMatrix();
+
+			// text canvas
+			this.textCanvas1.canvas.width = this.width;
+			this.textCanvas1.canvas.height = this.height;
+			this.setupTextCanvas();
+			this.renderTri.triMaterial.uniforms.uTextCanvas.value = this.textCanvas1.texture;
+
+			// mouse canvas
+			this.mouseCanvas.canvas.width = this.width;
+			this.mouseCanvas.canvas.height = this.height;
+
+			// grid
+			this.initGrid();
+
+			// composer
+			this.composer.setSize(this.width, this.height);
+
+		}, 500));
+	}
+
 
 	initGrid() {
 		this.grid = new Grid(this);
@@ -229,9 +267,7 @@ export default class WebGLView {
 	}
 
 	setupTextCanvas() {
-		this.textCanvas1 = new TextCanvas(this, 'IT WAS ALL A DREAM', '#000000', '#FFFFFF');
-
-		this.textCanvas2 = new TextCanvas(this, 'IT WAS ALL A DREAM', '#FFFFFF', '#000000');
+		this.textCanvas1 = new TextCanvas(this, 'IT WAS ALL A DREAM', '#020202', '#F8F8F8');
 	}
 
 	initRenderTri() {
@@ -293,14 +329,10 @@ export default class WebGLView {
 		this.testMeshMaterial.uniforms.u_time.value = time;
 	}
 
-	updateTextCanvases(time) {
+	updateTextCanvas(time) {
 		this.textCanvas1.textLine.update(time);
 		this.textCanvas1.textLine.draw(time);
 		this.textCanvas1.texture.needsUpdate = true;
-
-		this.textCanvas2.textLine.update(time);
-		this.textCanvas2.textLine.draw(time);
-		this.textCanvas2.texture.needsUpdate = true;
 	}
 
 	updateCubes(time) {
@@ -328,8 +360,8 @@ export default class WebGLView {
 			this.mouseCanvas.update();
 		}
 
-		if (this.textCanvas1 && this.textCanvas2) {
-			this.updateTextCanvases(time);
+		if (this.textCanvas1) {
+			this.updateTextCanvas(time);
 		}
 
 		if (this.cubes) {

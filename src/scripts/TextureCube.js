@@ -6,9 +6,8 @@ import glslify from 'glslify';
 import { Float32BufferAttribute } from 'three';
 
 export default class TextureCube {
-    constructor(webGLView, width, height, imageTexture, gridDim, id, zVal, pD) {
+    constructor(webGLView, width, height, gridDim, id, zVal, pD) {
         this.webGLView = webGLView;
-        this.imageTexture = imageTexture;
 
         const rows = gridDim.width;
         const columns = gridDim.height;
@@ -18,9 +17,6 @@ export default class TextureCube {
         // const geo = new THREE.PlaneBufferGeometry(width, height, 32);
         const mat = new THREE.ShaderMaterial({
             uniforms: {
-                image: {
-                    value: this.imageTexture
-                },
                 gridDimension: {
                     value: new THREE.Vector2(gridDim.width, gridDim.height)
                 },
@@ -30,17 +26,11 @@ export default class TextureCube {
                 gridId: {
                     value: new THREE.Vector2(id.i, id.j)
                 },
-                imageResolution: {
-                    value: new THREE.Vector2(this.imageTexture.image.width, this.imageTexture.image.height)
-                },
                 resolution: {
                     value: new THREE.Vector2(window.innerWidth, window.innerHeight)
                 },
                 textCanvasTexture1: {
                     value: this.webGLView.textCanvas1.texture
-                },
-                textCanvasTexture2: {
-                    value: this.webGLView.textCanvas2.texture
                 }
             },
             fragmentShader: glslify(imageTextureCubeFrag),
@@ -50,16 +40,21 @@ export default class TextureCube {
 
         const x = -(pD.width / 2) + id.i * width + width / 2;
         const y = pD.height / 2 - id.j * height - height / 2;
-        const z = zVal;
+        const z = zVal - 1;
         this.mesh.position.set(x, y, z);
 
-        TweenMax.to(this.mesh.rotation, 5.0, {
-            repeat: -1,
-            yoyo: true,
-            delay: 0.5 * id.j + id.i * 0.2,
-            y: Math.PI * 0.2,
-            ease: Power4.easeInOut
-        });
+
+        // only turn some of the cubes
+        if (id.j > 2 && id.j < 7) {
+
+            TweenMax.to(this.mesh.rotation, 5.0, {
+                repeat: -1,
+                yoyo: true,
+                delay: 0.5 * id.j + id.i * 0.2,
+                y: Math.PI * 0.2,
+                ease: Power4.easeInOut
+            });
+        }
     }
 
     updateUv(geo) {
